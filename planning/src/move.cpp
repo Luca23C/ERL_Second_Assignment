@@ -1,4 +1,4 @@
-// Copyright 2019 Intelligent Robotics Lab
+/*// Copyright 2019 Intelligent Robotics Lab
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public:
     wp.pose.position.y = 2.0;
     waypoints_["w2"] = wp;
 
-    wp.pose.position.x = -7.0;
+    wp.pose.position.x = 7.0;
     wp.pose.position.y = -5.0;
     waypoints_["w3"] = wp;
 
@@ -87,7 +87,7 @@ public:
       RCLCPP_ERROR(get_logger(), "Failed to send goal to navigation action server");
       return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
     }
-    RCLCPP_INFO(get_logger(), "Goal successfully sent to navigation action server");*/
+    RCLCPP_INFO(get_logger(), "Goal successfully sent to navigation action server");
 
 
     return ActionExecutorClient::on_activate(previous_state);
@@ -148,11 +148,11 @@ private:
     send_goal_options.feedback_callback = [this](
       NavigationGoalHandle::SharedPtr,
       NavigationFeedback feedback) {
-       /*
-     	 RCLCPP_INFO(get_logger(), "Current Position: (%.2f, %.2f)", current_pos_.position.x, current_pos_.position.y);
-        RCLCPP_INFO(get_logger(), "Goal Position: (%.2f, %.2f)", goal_pos_.pose.position.x, goal_pos_.pose.position.y);
-        RCLCPP_INFO(get_logger(), "Distance to Move: %.2f", dist_to_move);*/
-        send_feedback(
+       
+     	 //RCLCPP_INFO(get_logger(), "Current Position: (%.2f, %.2f)", current_pos_.position.x, current_pos_.position.y);
+        //RCLCPP_INFO(get_logger(), "Goal Position: (%.2f, %.2f)", goal_pos_.pose.position.x, goal_pos_.pose.position.y);
+        //RCLCPP_INFO(get_logger(), "Distance to Move: %.2f", dist_to_move);
+        //send_feedback(
           std::min(1.0, std::max(0.0, 1.0 - (feedback->distance_remaining / dist_to_move))),
           "Move running");
       };
@@ -185,6 +185,62 @@ private:
   nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
 
   double dist_to_move;
+};
+
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<MoveAction>();
+
+  node->set_parameter(rclcpp::Parameter("action_name", "move"));
+  node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  rclcpp::spin(node->get_node_base_interface());
+
+  rclcpp::shutdown();
+
+  return 0;
+}
+*/
+
+#include <memory>
+#include <algorithm>
+
+#include "plansys2_executor/ActionExecutorClient.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+
+using namespace std::chrono_literals;
+
+class MoveAction : public plansys2::ActionExecutorClient
+{
+public:
+  MoveAction()
+  : plansys2::ActionExecutorClient("move", 250ms)
+  {
+    progress_ = 0.0;
+  }
+
+private:
+  void do_work()
+  {
+    if (progress_ < 1.0) {
+      progress_ += 0.02;
+      send_feedback(progress_, "Move running");
+    } else {
+      finish(true, 1.0, "Move completed");
+
+      progress_ = 0.0;
+      std::cout << std::endl;
+    }
+
+    std::cout << "\r\e[K" << std::flush;
+    std::cout << "Moving ... [" << std::min(100.0, progress_ * 100.0) << "%]  " <<
+      std::flush;
+  }
+
+  float progress_;
 };
 
 int main(int argc, char ** argv)

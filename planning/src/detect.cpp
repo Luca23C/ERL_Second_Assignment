@@ -1,48 +1,58 @@
-
 #include <memory>
 #include <algorithm>
 
-#include "plansys2_executor/ActionExecutorClient.hpp"
-
-#include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+
+#include "plansys2_executor/ActionExecutorClient.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "ros2_aruco_interfaces/srv/get_map_data.hpp"
 
 using namespace std::chrono_literals;
 
-class Detect : public plansys2::ActionExecutorClient
-{
+
+class Detect : public plansys2::ActionExecutorClient {
 public:
   Detect()
-  : plansys2::ActionExecutorClient("detect", 1s)
-  {
-    progress_ = 0.0;
+  : plansys2::ActionExecutorClient("detect", 1s) {
+    // Crea il client di servizio
+    client_ = this->create_client<ros2_aruco_interfaces::srv::GetMapData>("get_map_data");
+
+    // Controlla se il servizio è disponibile
+    if (!client_->wait_for_service(5s)) {
+      RCLCPP_ERROR(this->get_logger(), "Il servizio 'get_map_data' non è disponibile");
+      throw std::runtime_error("Il servizio 'get_map_data' non è disponibile");
+    }
   }
 
 private:
-  void do_work()
-  {
-    // Simulazione di un processo di rilevamento
-    if (progress_ < 1.0) {
-      progress_ += 0.05;  // Aumenta il progresso del 5% ad ogni chiamata
-      send_feedback(progress_, "Detect running");  // Invia feedback con il progresso
-    } else {
-      finish(true, 1.0, "Detect completed");  // Completa l'azione quando il progresso è 1.0
 
-      progress_ = 0.0;  // Reset del progresso
-      std::cout << std::endl;
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+    on_activate(const rclcpp_lifecycle::State & previous_state){
+    // Crea una richiesta
+    auto request = std::make_shared<ros2_aruco_interfaces::srv::GetMapData::Request>();
+
+    // Invia la richiesta al servizio
+    auto result_future = client_->async_send_request(request);
+
+    // Attendi il risultato
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) == rclcpp::FutureReturnCode::SUCCESS){
+      auto response = result_future.get();
+      RCLCPP_INFO(this->get_logger(), "Risultato del servizio: %ld", response->x, response->y, response->marker_id);
+    }
+    else {
+      RCLCPP_ERROR(this->get_logger(), "Errore nella chiamata al servizio");
     }
 
-    // Stampa il progresso a schermo
-    std::cout << "\r\e[K" << std::flush;
-    std::cout << "Detecting ... [" << std::min(100.0, progress_ * 100.0) << "%]  " <<
-      std::flush;
+    finish(true, 1.0, "Detect completed");
+    return ActionExecutorClient::on_activate(previous_state);
   }
 
-  float progress_;  // Variabile per tenere traccia del progresso dell'azione
+  rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedPtr client_;
+  
+  void do_work(){}
 };
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char **argv) {
   rclcpp::init(argc, argv);  // Inizializza il sistema ROS 2
   auto node = std::make_shared<Detect>();  // Crea un oggetto di tipo Detect
 

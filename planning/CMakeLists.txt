@@ -9,6 +9,7 @@ find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_executor REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(ros2_aruco_interfaces REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -19,6 +20,7 @@ set(dependencies
     plansys2_executor
     geometry_msgs
     nav2_msgs
+    ros2_aruco_interfaces
 )
 
 add_executable(move_node src/move.cpp)

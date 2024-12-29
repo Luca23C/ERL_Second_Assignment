@@ -1,0 +1,21 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/luca/erl_ws/install/slam_toolbox/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/ros2_aruco/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/ros2_aruco_interfaces/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/plansys2_msgs/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/dwb_msgs/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/nav_2d_msgs/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/nav2_msgs/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/nav2_gazebo_spawner/lib/python3.8/site-packages",
+        "/home/luca/erl_ws/install/nav2_common/lib/python3.8/site-packages",
+        "/home/luca/unige_ros2_ws/install/ros2_aruco_interfaces/lib/python3.8/site-packages",
+        "/home/luca/unige_ros2_ws/install/ros2_aruco/lib/python3.8/site-packages",
+        "/home/luca/unige_ros2_ws/install/robot_urdf/lib/python3.8/site-packages",
+        "/opt/ros/foxy/lib/python3.8/site-packages"
+    ],
+    "files.associations": {
+        "chrono": "cpp",
+        "algorithm": "cpp"
+    }
+}

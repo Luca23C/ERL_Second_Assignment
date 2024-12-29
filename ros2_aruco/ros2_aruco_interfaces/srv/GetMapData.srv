@@ -1,0 +1,6 @@
+# Request
+---
+# Response
+float64 x
+float64 y
+int64 marker_id
