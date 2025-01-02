@@ -17,7 +17,7 @@ def generate_launch_description():
 
     test_robot_description_share = FindPackageShare(package='robot_urdf').find('robot_urdf')
     default_model_path = os.path.join(test_robot_description_share, 'urdf/robot5.xacro')
-    assignment2_world = os.path.join(test_robot_description_share, 'worlds/assignment2.world')
+    assignment2_world = os.path.join(test_robot_description_share, 'worlds/world_ass2.world')
     rviz_config_path = os.path.join(test_robot_description_share, 'config/rviz.rviz')
 
     robot_state_publisher_node = Node(
@@ -35,8 +35,8 @@ def generate_launch_description():
     # GAZEBO_MODEL_PATH has to be correctly set for Gazebo to be able to find the model
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-entity', 'my_test_robot', '-topic', '/robot_description',
-                        '-x', '-3',
-		                '-y', '-8',
+                        '-x', '0',
+		                '-y', '3',
                         '-z', '0.1',
                         '-R', '0',
                         '-P', '0',

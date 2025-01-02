@@ -60,7 +60,7 @@ def generate_launch_description():
             os.path.join(slam_toolbox_launch_dir, 'online_sync_launch.py')
         )
     )      
-    '''
+    
     nav2_bringup_launch_dir = os.path.join(
         get_package_share_directory('nav2_bringup'),
         'launch'
@@ -71,7 +71,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(nav2_bringup_launch_dir, 'navigation_launch.py')
         )
-    )'''
+    )
     
     nav2_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(

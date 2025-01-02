@@ -1,4 +1,4 @@
-	(define (domain domain_name)
+(define (domain domain_name)
 
 	(:requirements :strips :typing :adl :fluents :durative-actions :negative-preconditions)
 
@@ -25,7 +25,7 @@
 	; Azione: Spostarsi da un waypoint a un altro
 	(:durative-action move
 	    :parameters (?r - robot ?wp1 ?wp2 - waypoint)
-	    :duration ( = ?duration 5)
+	    :duration ( = ?duration 10)
 	    :condition (and
 		 (at start(connected ?wp1 ?wp2))
 		 (at start(at ?r ?wp1))
@@ -39,7 +39,7 @@
 	; Azione: Rilevare un marker in un waypoint
 	(:durative-action detect
 	    :parameters (?r - robot ?w - waypoint ?m - marker)
-	    :duration (= ?duration 5)
+	    :duration (= ?duration 10)
 	    :condition (and 
 		 (at start (at ?r ?w))                ;; Il robot deve trovarsi nel waypoint
 		 ;(at start (visited ?w))              ;; Il waypoint deve essere stato visitato
@@ -53,7 +53,7 @@
 	; Azione: Completare la missione
 (:durative-action move_in_order
     :parameters (?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?m1 - marker)
-    :duration (= ?duration 5)
+    :duration (= ?duration 10)
     :condition (and 
         (at start (detected ?r ?w1 ?m1))   ;; Marker m1 deve essere rilevato nel waypoint w1
         (at start (detected ?r ?w2 ?m1))   ;; Marker m1 deve essere rilevato nel waypoint w2
@@ -65,5 +65,4 @@
     )
 )
 
-	)
-
+)

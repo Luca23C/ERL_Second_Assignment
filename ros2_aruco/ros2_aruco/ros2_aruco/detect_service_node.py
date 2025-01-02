@@ -71,6 +71,7 @@ class MapDataService(Node):
         self.position_x = None
         self.position_y = None
         self.marker_detected = False
+        self.detect_active = False
 
         # Publish conrol velocity of the robot
         self.pub_vel_control = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -98,9 +99,13 @@ class MapDataService(Node):
 
     def image_callback(self, img_msg):
         # Routine for controlling robot velocity
+
+        if not self.detect_active:
+            return
+
         control_msg = Twist()
         
-        self.get_logger().info('Dio cane')
+        #self.get_logger().info('Detection')
     
         if self.info_msg is None:
             self.get_logger().warn("No camera info has been received!")
@@ -123,11 +128,12 @@ class MapDataService(Node):
     
         # Rilevazione dei marker
         corners, marker_ids, rejected = cv2.aruco.detectMarkers(cv_image, self.aruco_dictionary, parameters=self.aruco_parameters)
-    
+
+        print(marker_ids)
         if marker_ids is None:
             # Nessun marker rilevato, aggiorniamo lo stato
-            self.marker_detected = False
-            self.id = None  # Reset dell'id
+            #self.marker_detected = False
+            #self.id = None  # Reset dell'id
             control_msg.angular.z = 0.5
             self.pub_vel_control.publish(control_msg)
         else:
@@ -146,12 +152,15 @@ class MapDataService(Node):
 
     def get_map_data_callback(self, request, response):
         # retrieve info pose
+        self.detect_active = True
 
         if self.marker_detected:
             print('ciao')
             response.x = self.position_x
             response.y = self.position_y
             response.marker_id = self.id
+            self.marker_detected = False
+            self.detect_active = False
 
             self.get_logger().info(f"Sending map data: x={response.x}, y={response.y}, marker_id={response.marker_id}")
 
