@@ -6,13 +6,13 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "ros2_aruco_interfaces/srv/get_map_data.hpp"  // Inclusione del servizio
 
-
 #include <std_msgs/msg/string.hpp>
- // Service for getting map data
+// Service for getting map data
 #include <sstream>
 #include <vector>
 using namespace std::chrono_literals;
-//double matrix_[4][3];
+
+
 class Detect : public plansys2::ActionExecutorClient
 {
 public:
@@ -22,21 +22,15 @@ public:
     // Inizializza il client di servizio
     service_client_ = this->create_client<ros2_aruco_interfaces::srv::GetMapData>("/get_map_data");
     
-    subscriber_ = this->create_subscription<std_msgs::msg::String>(
-            "matrix_topic", 10,
-            std::bind(&Detect::matrix_callback, this, std::placeholders::_1)
-        );
+    //subscriber_ = this->create_subscription<std_msgs::msg::String>("matrix_topic", 10, std::bind(&Detect::matrix_callback, this, std::placeholders::_1));
 
-        // Publisher per pubblicare la matrice aggiornata
+    // Publisher per pubblicare la matrice aggiornata
     publisher_ = this->create_publisher<std_msgs::msg::String>("matrix_topic", 10);
 
-        // Timer per la pubblicazione periodica della matrice aggiornata
-    timer_ = this->create_wall_timer(
-            std::chrono::seconds(1),
-            std::bind(&Detect::publish_updated_matrix, this)
-        );
+    // Timer per la pubblicazione periodica della matrice aggiornata
+    timer_ = this->create_wall_timer(std::chrono::seconds(1),std::bind(&Detect::publish_updated_matrix, this));
 
-        float x, y, marker_id;
+    float x, y, marker_id;
   }
 
 private:
@@ -52,53 +46,46 @@ private:
 
       auto request = std::make_shared<ros2_aruco_interfaces::srv::GetMapData::Request>();
       
-      auto garbage = service_client_->async_send_request(request,
-        [this](rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedFuture response) {
-          try {
-            auto result = response.get();
-            //RCLCPP_INFO(this->get_logger(), "junk del servizio: x=%.2f, y=%.2f, marker_id=%.2f", 
-            //      result->x, result->y, result->marker_id);
-            //RCLCPP_INFO(this->get_logger(), "Received map data: %s", result->map_data.c_str());
-          } catch (const std::exception &e) {
-            //RCLCPP_ERROR(this->get_logger(), "Failed to call service: %s", e.what());
-            finish(false, 0.0, "Service call failed");
-          }
-        });
-
-        
-
-
+      auto garbage = service_client_->async_send_request(request, [this](rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedFuture response) {
+        try {
+          auto result = response.get();
+          //RCLCPP_INFO(this->get_logger(), "junk del servizio: x=%.2f, y=%.2f, marker_id=%.2f", 
+          //      result->x, result->y, result->marker_id);
+          //RCLCPP_INFO(this->get_logger(), "Received map data: %s", result->map_data.c_str());
+        } catch (const std::exception &e) {
+          //RCLCPP_ERROR(this->get_logger(), "Failed to call service: %s", e.what());
+          finish(false, 0.0, "Service call failed");
+        }
+      });
     }
 
     // Simulazione di un processo di rilevamento
     if (progress_ < 1.0) {
       progress_ += 0.05;  // Aumenta il progresso del 5% ad ogni chiamata
       send_feedback(progress_, "Detect running");  // Invia feedback con il progresso
-    } else {
+    } 
+    else {
             
       auto request = std::make_shared<ros2_aruco_interfaces::srv::GetMapData::Request>();
 
-      auto future = service_client_->async_send_request(request,
-        [this](rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedFuture response) {
-          try {
-            auto result = response.get();
+      auto future = service_client_->async_send_request(request, [this](rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedFuture response) {
+        try {
+          auto result = response.get();
             
-            //RCLCPP_INFO(this->get_logger(), "Risultato del servizio: x=%.2f, y=%.2f, marker_id=%ld", 
-            //      result->x, result->y, result->marker_id);
-            //RCLCPP_INFO(this->get_logger(), "Received map data: %s", result->map_data.c_str());
-            update_matrix(result->x, result->y, result->marker_id); // Update matrix based on service result
-            publish_updated_matrix();
-          } catch (const std::exception &e) {
-            //RCLCPP_ERROR(this->get_logger(), "Failed to call service: %.2f", e.what());
-            finish(false, 0.0, "Service call failed");
-          }
-        });
-      finish(true, 1.0, "Detect completed");  // Completa l'azione quando il progresso è 1.0
+          //RCLCPP_INFO(this->get_logger(), "Risultato del servizio: x=%.2f, y=%.2f, marker_id=%ld", result->x, result->y, result->marker_id);
+          //RCLCPP_INFO(this->get_logger(), "Received map data: %s", result->map_data.c_str());
+          update_matrix(result->x, result->y, result->marker_id); // Update matrix based on service result
+          publish_updated_matrix();
+        } catch (const std::exception &e) {
+          //RCLCPP_ERROR(this->get_logger(), "Failed to call service: %.2f", e.what());
+          finish(false, 0.0, "Service call failed");
+        }
+      });
+    finish(true, 1.0, "Detect completed");  // Completa l'azione quando il progresso è 1.0
 
-      progress_ = 0.0;  // Reset del progresso
-      std::cout << std::endl;
-    }
-      
+    progress_ = 0.0;  // Reset del progresso
+    std::cout << std::endl;
+  }
 
     // Stampa il progresso a schermo
     std::cout << "\r\e[K" << std::flush;
@@ -110,20 +97,20 @@ private:
       bool updated = false; // Variabile per tenere traccia se la matrice è stata aggiornata
 
     for (int row = 0; row < 4; ++row) {
-        if (matrix_[row][0] == 0 && matrix_[row][1] == 0 && matrix_[row][2] == 0) {
-            // Se troviamo una riga vuota (tutti i valori sono zero), aggiorniamola
-            //matrix_[row][0] = x;
-            //matrix_[row][1] = y;
-            //matrix_[row][2] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
+      if (matrix_[row][0] == 0 && matrix_[row][1] == 0 && matrix_[row][2] == 0) {
+        // Se troviamo una riga vuota (tutti i valori sono zero), aggiorniamola
+        //matrix_[row][0] = x;
+        //matrix_[row][1] = y;
+        //matrix_[row][2] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
 	     
-	     matrix_[row][0] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
-            matrix_[row][1] = x;
-            matrix_[row][2] = y;
-            //RCLCPP_INFO(this->get_logger(), "Matrix updated at row %d: [%f, %f, %f]",
-            //            row, x, y, static_cast<double>(marker_id));
-            updated = true; // Segna che la matrice è stata aggiornata
-            break; // Esci dal ciclo dopo aver trovato la prima riga disponibile
-        }
+	    matrix_[row][0] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
+      matrix_[row][1] = x;
+      matrix_[row][2] = y;
+      //RCLCPP_INFO(this->get_logger(), "Matrix updated at row %d: [%f, %f, %f]",
+      //            row, x, y, static_cast<double>(marker_id));
+      updated = true; // Segna che la matrice è stata aggiornata
+      break; // Esci dal ciclo dopo aver trovato la prima riga disponibile
+      }
     }
 
     if (!updated) {
@@ -134,7 +121,7 @@ private:
 
   void matrix_callback(const std_msgs::msg::String::SharedPtr msg) {
     // Riceve la matrice come stringa e la converte in formato interno
-   //RCLCPP_INFO(this->get_logger(), "Received matrix: %s", msg->data.c_str());
+    //RCLCPP_INFO(this->get_logger(), "Received matrix: %s", msg->data.c_str());
 
     std::istringstream matrix_stream(msg->data);
     std::string line;
@@ -175,15 +162,15 @@ private:
   // Pubblica la matrice aggiornata
   auto message = std_msgs::msg::String();
   message.data = matrix_stream.str();
+  publisher_->on_activate();
   publisher_->publish(message);
   RCLCPP_INFO(this->get_logger(), "Published updated matrix: %s", message.data.c_str());
+
 }
 
-
-
   std::vector<std::vector<double>>  matrix_ = std::vector<std::vector<double>>(4, std::vector<double>(3, 0.0)); 
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscriber_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+  //rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscriber_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr publisher_;
   float progress_;  // Variabile per tenere traccia del progresso dell'azione
   rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedPtr service_client_;  // Client per il servizio
 
@@ -196,6 +183,8 @@ int main(int argc, char ** argv)
 
   node->set_parameter(rclcpp::Parameter("action_name", "detect"));  // Imposta il nome dell'azione
   node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);  // Esegue la transizione di configurazione
+  node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
 
   rclcpp::spin(node->get_node_base_interface());  // Inizia l'esecuzione del nodo
 

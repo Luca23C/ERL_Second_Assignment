@@ -134,7 +134,7 @@ class MapDataService(Node):
             # Nessun marker rilevato, aggiorniamo lo stato
             #self.marker_detected = False
             #self.id = None  # Reset dell'id
-            control_msg.angular.z = 0.5
+            control_msg.angular.z = 0.7
             self.pub_vel_control.publish(control_msg)
         else:
             # Marker rilevati
@@ -155,7 +155,6 @@ class MapDataService(Node):
         self.detect_active = True
 
         if self.marker_detected:
-            print('ciao')
             response.x = self.position_x
             response.y = self.position_y
             response.marker_id = self.id
