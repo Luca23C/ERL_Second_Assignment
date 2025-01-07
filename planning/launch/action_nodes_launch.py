@@ -30,10 +30,10 @@ def generate_launch_description():
         parameters=[]
     )
 
-    move_in_order_cmd = Node(
+    move_to_lowest_id = Node(
         package='planning',
-        executable='move_in_order_node',
-        name='move_in_order_node',
+        executable='move_to_lowest_id_node',
+        name='move_to_lowest_id_node',
 
         output='screen',
         parameters=[]
@@ -62,7 +62,7 @@ def generate_launch_description():
     return LaunchDescription([
         move_cmd,
         detect_cmd,
-        move_in_order_cmd,
+        move_to_lowest_id,
         service_node,
         #dummy_cmd,
     ])

@@ -129,11 +129,9 @@ class MapDataService(Node):
         # Rilevazione dei marker
         corners, marker_ids, rejected = cv2.aruco.detectMarkers(cv_image, self.aruco_dictionary, parameters=self.aruco_parameters)
 
-        print(marker_ids)
+        #print(marker_ids)
         if marker_ids is None:
             # Nessun marker rilevato, aggiorniamo lo stato
-            #self.marker_detected = False
-            #self.id = None  # Reset dell'id
             control_msg.angular.z = 0.7
             self.pub_vel_control.publish(control_msg)
         else:
@@ -151,7 +149,7 @@ class MapDataService(Node):
 
 
     def get_map_data_callback(self, request, response):
-        # retrieve info pose
+        # service che restituisce le info sulla posizione e l'id rilevato
         self.detect_active = True
 
         if self.marker_detected:
