@@ -121,9 +121,6 @@ def generate_launch_description():
     
     # Add slam_toolbox launch
     ld.add_action(slam_toolbox_launch)
-    #ld.add_action(nav2_cmd)
-    #ld.add_action(move_cmd)
-    #ld.add_action(detect_cmd)
     ld.add_action(move_to_lowest_id)
 
     return ld

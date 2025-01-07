@@ -21,8 +21,6 @@ public:
   {
     // Inizializza il client di servizio
     service_client_ = this->create_client<ros2_aruco_interfaces::srv::GetMapData>("/get_map_data");
-    
-    //subscriber_ = this->create_subscription<std_msgs::msg::String>("matrix_topic", 10, std::bind(&Detect::matrix_callback, this, std::placeholders::_1));
 
     // Publisher per pubblicare la matrice aggiornata
     publisher_ = this->create_publisher<std_msgs::msg::String>("matrix_topic", 10);
@@ -44,8 +42,8 @@ private:
         return;
       }
 
+      // Chiamata al servizio per ottenere le informazioni necessarie (marker id e posizione x, y)
       auto request = std::make_shared<ros2_aruco_interfaces::srv::GetMapData::Request>();
-      
       auto garbage = service_client_->async_send_request(request, [this](rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedFuture response) {
         try {
           auto result = response.get();
@@ -65,9 +63,9 @@ private:
       send_feedback(progress_, "Detect running");  // Invia feedback con il progresso
     } 
     else {
-            
+      
+      // Chiamata al servizio per ottenere le informazioni necessarie (marker id e posizione x, y)
       auto request = std::make_shared<ros2_aruco_interfaces::srv::GetMapData::Request>();
-
       auto future = service_client_->async_send_request(request, [this](rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedFuture response) {
         try {
           auto result = response.get();
@@ -94,28 +92,22 @@ private:
   }
 
   void update_matrix(double x, double y, double marker_id) {
-      bool updated = false; // Variabile per tenere traccia se la matrice è stata aggiornata
+    bool updated = false; // Variabile per tenere traccia se la matrice è stata aggiornata
 
     for (int row = 0; row < 4; ++row) {
       if (matrix_[row][0] == 0 && matrix_[row][1] == 0 && matrix_[row][2] == 0) {
-        // Se troviamo una riga vuota (tutti i valori sono zero), aggiorniamola
-        //matrix_[row][0] = x;
-        //matrix_[row][1] = y;
-        //matrix_[row][2] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
-	     
-	    matrix_[row][0] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
-      matrix_[row][1] = x;
-      matrix_[row][2] = y;
-      //RCLCPP_INFO(this->get_logger(), "Matrix updated at row %d: [%f, %f, %f]",
-      //            row, x, y, static_cast<double>(marker_id));
-      updated = true; // Segna che la matrice è stata aggiornata
-      break; // Esci dal ciclo dopo aver trovato la prima riga disponibile
+        matrix_[row][0] = static_cast<double>(marker_id); // Trasformiamo marker_id in double
+        matrix_[row][1] = x;
+        matrix_[row][2] = y;
+        //RCLCPP_INFO(this->get_logger(), "Matrix updated at row %d: [%f, %f, %f]", row, x, y, static_cast<double>(marker_id));
+        updated = true; // Segna che la matrice è stata aggiornata
+        break; // Esci dal ciclo dopo aver trovato la prima riga disponibile
       }
     }
 
     if (!updated) {
         // Se non abbiamo trovato nessuna riga disponibile (la matrice è piena)
-        //RCLCPP_WARN(this->get_logger(), "No available row to update, matrix is full.");
+        RCLCPP_WARN(this->get_logger(), "No available row to update, matrix is full.");
     }
    }
 
@@ -144,32 +136,31 @@ private:
   }
 
   void publish_updated_matrix() {
-  std::ostringstream matrix_stream;
-  matrix_stream << "[\n";
+    std::ostringstream matrix_stream;
+    matrix_stream << "[\n";
 
-  // Costruisci la stringa della matrice
-  for (const auto &row : matrix_) {
-    matrix_stream << "    [";
-    for (size_t i = 0; i < row.size(); ++i) {
-      matrix_stream << row[i];
-      if (i < row.size() - 1) matrix_stream << ", ";
+    // Costruisci la stringa della matrice
+    for (const auto &row : matrix_) {
+      matrix_stream << "    [";
+      for (size_t i = 0; i < row.size(); ++i) {
+        matrix_stream << row[i];
+        if (i < row.size() - 1) matrix_stream << ", ";
+      }
+      matrix_stream << "],\n";
     }
-    matrix_stream << "],\n";
+
+    matrix_stream << "]";
+
+    // Pubblica la matrice aggiornata
+    auto message = std_msgs::msg::String();
+    message.data = matrix_stream.str();
+    publisher_->on_activate();
+    publisher_->publish(message);
+    RCLCPP_INFO(this->get_logger(), "Published updated matrix: %s", message.data.c_str());
+
   }
 
-  matrix_stream << "]";
-
-  // Pubblica la matrice aggiornata
-  auto message = std_msgs::msg::String();
-  message.data = matrix_stream.str();
-  publisher_->on_activate();
-  publisher_->publish(message);
-  RCLCPP_INFO(this->get_logger(), "Published updated matrix: %s", message.data.c_str());
-
-}
-
   std::vector<std::vector<double>>  matrix_ = std::vector<std::vector<double>>(4, std::vector<double>(3, 0.0)); 
-  //rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscriber_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr publisher_;
   float progress_;  // Variabile per tenere traccia del progresso dell'azione
   rclcpp::Client<ros2_aruco_interfaces::srv::GetMapData>::SharedPtr service_client_;  // Client per il servizio

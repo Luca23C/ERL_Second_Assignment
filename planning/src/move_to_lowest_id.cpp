@@ -23,13 +23,12 @@ public:
   MoveInOrder()
   : plansys2::ActionExecutorClient("move_to_lowest_id", 1s), x_(0.0), y_(0.0), progress_(0.0)
   {
-    // Subscriber per il topic '/matrix_topic'
-    matrix_subscriber_ = this->create_subscription<std_msgs::msg::String>(
-      "/matrix_topic", 10, std::bind(&MoveInOrder::matrix_callback, this, std::placeholders::_1));
+    // Subscriber per il topic '/matrix_topic' che crea una matrice con id e posizione x e y del robot quando trova il marker
+    matrix_subscriber_ = this->create_subscription<std_msgs::msg::String>("/matrix_topic", 10, std::bind(&MoveInOrder::matrix_callback, 
+    this, std::placeholders::_1));
 
     using namespace std::placeholders;
-    pos_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/amcl_pose",10,
-      std::bind(&MoveInOrder::current_pos_callback, this, _1));
+    pos_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/amcl_pose",10,std::bind(&MoveInOrder::current_pos_callback, this, _1));
   }
 
   void current_pos_callback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
@@ -58,8 +57,9 @@ private:
       std::string data = msg->data;
       std::istringstream stream(data);
       std::vector<std::vector<double>> matrix;
-
       std::string line;
+
+      // Parsing del messaggio letto nel topic
       while (std::getline(stream, line)) {
         if (line.find("[") != std::string::npos) {
           std::vector<double> row;
@@ -119,10 +119,9 @@ private:
     bool is_action_server_ready = false;
     do {
         RCLCPP_INFO(get_logger(), "Waiting for navigation action server...");
-        is_action_server_ready =
-          navigation_action_client_->wait_for_action_server(std::chrono::seconds(15));
+        is_action_server_ready = navigation_action_client_->wait_for_action_server(std::chrono::seconds(15));
         if (!is_action_server_ready) {
-            RCLCPP_ERROR(get_logger(), "Navigation action server not ready after waiting.");
+          RCLCPP_ERROR(get_logger(), "Navigation action server not ready after waiting.");
         }
     } while (!is_action_server_ready);
 
@@ -131,8 +130,8 @@ private:
     // Prendi il waypoint calcolato dalla matrice
     auto wp_to_navigate = "lowest_wp";
     if (waypoints_.find(wp_to_navigate) == waypoints_.end()) {
-        RCLCPP_ERROR(get_logger(), "Waypoint [%s] not found", wp_to_navigate);
-        return;
+      RCLCPP_ERROR(get_logger(), "Waypoint [%s] not found", wp_to_navigate);
+      return;
     }
 
     goal_pos_ = waypoints_[wp_to_navigate];
@@ -147,33 +146,32 @@ private:
     auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
 
     send_goal_options.feedback_callback = [this](NavigationGoalHandle::SharedPtr,NavigationFeedback feedback) {
-        send_feedback(std::min(1.0, std::max(0.0, 1.0 - (feedback->distance_remaining / dist_to_move))),"Move running");
-      };
+      send_feedback(std::min(1.0, std::max(0.0, 1.0 - (feedback->distance_remaining / dist_to_move))),"Move running");
+    };
 
     send_goal_options.result_callback = [this](auto) {
-        finish(true, 1.0, "Move completed");
+      finish(true, 1.0, "Move completed");
     };
 
     future_navigation_goal_handle_ = navigation_action_client_->async_send_goal(navigation_goal_, send_goal_options);
   }
 
+  // Dichiarazioni generali per la parte di navigation
   std::map<std::string, geometry_msgs::msg::PoseStamped> waypoints_;
 
-  using NavigationGoalHandle =
-    rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>;
-  using NavigationFeedback =
-    const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback>;
+  using NavigationGoalHandle = rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>;
+  using NavigationFeedback = const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback>;
 
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigation_action_client_;
   std::shared_future<NavigationGoalHandle::SharedPtr> future_navigation_goal_handle_;
   NavigationGoalHandle::SharedPtr navigation_goal_handle_;
-
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pos_sub_;
   geometry_msgs::msg::Pose current_pos_;
   geometry_msgs::msg::PoseStamped goal_pos_;
   nav2_msgs::action::NavigateToPose::Goal navigation_goal_;
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr matrix_subscriber_;
 
+  // Dichiarazioni generali per la lettura della matrice contenente le informazioni: id marker e posizione x, y
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr matrix_subscriber_;
   double dist_to_move;
   int x_;
   int y_;
