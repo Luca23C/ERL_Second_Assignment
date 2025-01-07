@@ -43,7 +43,7 @@ def generate_launch_description():
             'launch',
             'plansys2_bringup_launch_monolithic.py')),
         launch_arguments={
-          'model_file': example_dir + '/pddl/prova.pddl',
+          'model_file': example_dir + '/pddl/domain.pddl',
           'namespace': namespace
           }.items())
           
@@ -103,10 +103,10 @@ def generate_launch_description():
         output='screen',
         parameters=[])
 
-    move_in_order_cmd = Node(
+    move_to_lowest_id = Node(
         package='planning',
-        executable='move_in_order_node',
-        name='move_in_order_node',
+        executable='move_to_lowest_id_node',
+        name='move_to_lowest_id_node',
         namespace=namespace,
         output='screen',
         parameters=[])   # Create the launch description and populate
@@ -124,6 +124,6 @@ def generate_launch_description():
     #ld.add_action(nav2_cmd)
     #ld.add_action(move_cmd)
     #ld.add_action(detect_cmd)
-    ld.add_action(move_in_order_cmd)
+    ld.add_action(move_to_lowest_id)
 
     return ld

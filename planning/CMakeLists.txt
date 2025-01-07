@@ -29,15 +29,15 @@ ament_target_dependencies(move_node ${dependencies})
 add_executable(detect_node src/detect.cpp)
 ament_target_dependencies(detect_node ${dependencies})
 
-add_executable(move_in_order_node src/move_in_order.cpp)
-ament_target_dependencies(move_in_order_node ${dependencies})
+add_executable(move_to_lowest_id_node src/move_to_lowest_id.cpp)
+ament_target_dependencies(move_to_lowest_id_node ${dependencies})
 
 install(DIRECTORY launch pddl DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
   move_node
   detect_node
-  move_in_order_node
+  move_to_lowest_id_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

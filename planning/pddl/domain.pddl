@@ -51,7 +51,7 @@
 	)
 
 	; Azione: Completare la missione
-(:durative-action move_in_order
+(:durative-action move_to_lowest_id
     :parameters (?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?m1 - marker)
     :duration (= ?duration 10)
     :condition (and 
