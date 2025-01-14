@@ -3,7 +3,7 @@ Experimental Robot Laboratory - Second assignment
 Andrea Scorrano 6463777   
 Luca Cornia 6467737
 
-
+**N.B: Please switch to the *consegna* branch after cloning the repository** 
 
 Develop a ROS package that lets a mobile robot endowed with a camera and a laser scanner move the robot to
 the waypoint corresponding to the lowest ID.
@@ -109,10 +109,12 @@ This ROS2 node receives a matrix from a topic, selects the row with the lowest I
 It manages the robot's state with continuous feedback and position updates. Improvements could include thread safety, configurable parameters, and more robust validations.
 
 ## Results ##
-In this section, it is possible to see the entire simulation running:
+In this section, it is possible to see the entire simulation running.   
+Here we can see a robot that navigate into the environment by using SLAM algorithm. The robot does not know a priori the environment, but it knows the weypoints were are located the four marker.   
+We can see that the robot visit all the four waypoint and detect the aruco markers. Once this objective is achieved, it goes towards the marker with the lowest id.
+
+https://github.com/user-attachments/assets/b7a744b9-a100-432d-8726-78049850707d
 
 ## Problems encountered and possible improvements ##
-
-
-
-
+During our test we noticed that exactly the same simulation works better on the native linux instead of docker or virtual machine.   
+Additionally, the SLAM algorithm for the navigation sometimes does not work properly.To improve this aspect, the use of another type of navigation algorithm like bug0 could provide a constant result, leading to a more stable and consistent achievement of the objectives.
