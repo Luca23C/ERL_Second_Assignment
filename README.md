@@ -88,7 +88,7 @@ Once the plan is generated type "run" on this terminal
 ```
 ## Component Diagram of the whole system ##
 
-<img src=![componentDiagram](https://github.com/user-attachments/assets/88d465c2-7234-4967-b66e-1d87f24f34c5)>
+![componentDiagram](https://github.com/user-attachments/assets/88d465c2-7234-4967-b66e-1d87f24f34c5)
 
 ### Move Node ###
 The node implements a ROS2 action called `MoveAction` to navigate a robot to predefined waypoints using the Plansys2 framework. 
