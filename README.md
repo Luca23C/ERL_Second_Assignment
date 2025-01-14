@@ -1,6 +1,6 @@
-Research track 1 Second assignment
+Experimental Robot Laboratory - Second assignment
 ==================
-Andrea Scorrano 6463777
+Andrea Scorrano 6463777   
 Luca Cornia 6467737
 
 
@@ -24,19 +24,19 @@ To run the simulation of the enviroment, it's needed to write le following line:
 
 ```
 
-# ros2 launch robot_urdf gazebo_assignment.launch
+ros2 launch robot_urdf gazebo_assignment.launch
 
 ```
 To run the navigation sistem run on a new terminal:
 ```
-# ros2 launch nav2_bringup navigation_launch.py 
+ros2 launch nav2_bringup navigation_launch.py 
  
 ```
 
 To run the launch file containing the domain and the slam toolbox sistem run: 
 
 ```
-# ros2 launch planning prova_launch.py 
+ros2 launch planning planning_launch.py 
 ```
 
 To run all the nodes  move_cmd, detect_cmd, move_to_lowest_id, service_node:
@@ -88,7 +88,7 @@ Once the plan is generated type "run" on this terminal
 ```
 ## Component Diagram of the whole system ##
 
-!!! inserisci immagine !!!!!
+<img src=https://github.com/user-attachments/assets/95e37490-01ff-4184-8713-4dbe20fb7efc)>
 
 ### Move Node ###
 The node implements a ROS2 action called `MoveAction` to navigate a robot to predefined waypoints using the Plansys2 framework. 
@@ -99,6 +99,9 @@ This node defines a ROS2 action node `Detect` that interacts with a service (`/g
 It publishes the updated matrix to a topic and provides progress feedback, simulating a detection process.
 
 ## Detection service Node ##
+The service node `detect_service_node` is located within the *ros_2_aruco* package.   
+This node allow us to activate the task for detecting the aruco marker. Once the marker is detected the z-angular velocity is set to zero and we save the id of the marker and the x and y position of the robot.
+Lastly, this service will provide this information to the `Detect` node.
 
 
 ### Move to the lowest id Node ###
@@ -106,6 +109,7 @@ This ROS2 node receives a matrix from a topic, selects the row with the lowest I
 It manages the robot's state with continuous feedback and position updates. Improvements could include thread safety, configurable parameters, and more robust validations.
 
 ## Results ##
+In this section, it is possible to see the entire simulation running:
 
 ## Problems encountered and possible improvements ##
 
