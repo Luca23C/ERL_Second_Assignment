@@ -110,7 +110,7 @@ It manages the robot's state with continuous feedback and position updates. Impr
 
 ## Results ##
 In this section, it is possible to see the entire simulation running.   
-Here we can see a robot that navigate into the environment by using SLAM algorithm. The robot does not know a priori the environment, but it knows the weypoints were are located the four marker.   
+Here we can see a robot that navigate into the environment by using SLAM algorithm. The robot does not know a priori the environment, but it knows the waypoints were are located the four marker.   
 We can see that the robot visit all the four waypoint and detect the aruco markers. Once this objective is achieved, it goes towards the marker with the lowest id.
 
 https://github.com/user-attachments/assets/b7a744b9-a100-432d-8726-78049850707d
