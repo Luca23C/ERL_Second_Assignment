@@ -1,7 +1,7 @@
 Experimental Robot Laboratory - Second assignment
 ==================
 Andrea Scorrano 6463777   
-Luca Cornia 6467737
+Luca Cornia 6467737   
 Irina Grishkovets 7879818
 
 **N.B: Please switch to the *consegna* branch after cloning the repository** 
