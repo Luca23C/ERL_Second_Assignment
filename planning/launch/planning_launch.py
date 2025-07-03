@@ -83,33 +83,7 @@ def generate_launch_description():
             'params_file': os.path.join(example_dir, 'params', 'nav2_params.yaml')
         }.items())
 
-
     
-    
-    # Specify the actions
-    move_cmd = Node(
-        package='planning',
-        executable='move_node',
-        name='move_node',
-        namespace=namespace,
-        output='screen',
-        parameters=[])
-
-    detect_cmd = Node(
-        package='planning',
-        executable='detect_node',
-        name='detect_node',
-        namespace=namespace,
-        output='screen',
-        parameters=[])
-
-    move_to_lowest_id = Node(
-        package='planning',
-        executable='move_to_lowest_id_node',
-        name='move_to_lowest_id_node',
-        namespace=namespace,
-        output='screen',
-        parameters=[])   # Create the launch description and populate
     ld = LaunchDescription()
 
     # Set environment variables
@@ -121,6 +95,5 @@ def generate_launch_description():
     
     # Add slam_toolbox launch
     ld.add_action(slam_toolbox_launch)
-    ld.add_action(move_to_lowest_id)
 
     return ld
