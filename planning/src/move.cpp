@@ -40,8 +40,8 @@ public:
     geometry_msgs::msg::PoseStamped wp;
     wp.header.frame_id = "/map";
     wp.header.stamp = now();
-    wp.pose.position.x = -7.0;
-    wp.pose.position.y = 1.5;
+    wp.pose.position.x = -6.0;
+    wp.pose.position.y = 1.3;
     wp.pose.position.z = 0.0;
     wp.pose.orientation.x = 0.0;
     wp.pose.orientation.y = 0.0;
