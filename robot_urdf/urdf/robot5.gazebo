@@ -103,4 +103,21 @@
     </sensor>
 </gazebo>
 
+<!-- Gazebo bumper plugin for the robot -->
+<gazebo reference="test_link">
+    <sensor name="bumper_sensor" type="contact">
+        <update_rate>10.0</update_rate>
+        <contact>
+            <collision>collision_test_link</collision>
+        </contact>
+        <plugin name="bumper_plugin" filename="libgazebo_ros_bumper.so">
+            <ros>
+                <namespace></namespace>
+                <remapping>bumper_states:=bumper_demo</remapping>
+            </ros>
+            <frame_name>test_link</frame_name>
+        </plugin>
+    </sensor>
+</gazebo>
+
 </robot>
