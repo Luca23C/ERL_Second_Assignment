@@ -35,6 +35,10 @@ ament_target_dependencies(move_to_lowest_id_node ${dependencies})
 add_executable(move_to_recharge_zone_node src/move_to_recharge_zone.cpp)
 ament_target_dependencies(move_to_recharge_zone_node ${dependencies})
 
+# Test
+add_executable(charge_action_node src/charge_action_node.cpp)
+ament_target_dependencies(charge_action_node ${dependencies})
+
 install(DIRECTORY launch pddl DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
@@ -42,6 +46,7 @@ install(TARGETS
   detect_node
   move_to_lowest_id_node
   move_to_recharge_zone_node
+  charge_action_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

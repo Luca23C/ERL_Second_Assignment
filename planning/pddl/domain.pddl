@@ -16,6 +16,7 @@
 	    (connected ?wp1 - waypoint ?wp2 - waypoint)
 		(in_charge ?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?cz - recharge_zone) 		;; Il robot è in una zona di ricarica
 		(connected_path ?w - waypoint ?cz - recharge_zone) ;; Il robot segue una routine di ricarica
+		(charged ?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?cz - recharge_zone) ;; Il robot è carico
 	)
 
 	; Azione: Spostarsi da un waypoint a un altro
@@ -45,17 +46,25 @@
 			(at start (detected ?r ?w4 ?m1))   ;; Marker m1 deve essere rilevato nel waypoint w4
 		)
 		:effect (and 
-			(at end (done ?r ?w1 ?w2 ?w3 ?w4)) ;; Il robot ha completato la missione
+			(at end (done ?r ?w1 ?w2 ?w3 ?w4))							;; Il robot ha completato la missione
 		)
 	)
 
-	; Azione: Ricaricare il robot
+	; Azione: Robot che va nella zona di ricarica
 	(:durative-action move_to_recharge_zone
-	    :parameters (?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?m1 - marker ?cz - recharge_zone)
+	    :parameters (?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?m - marker ?cz - recharge_zone)
 	    :duration (= ?duration 10)
 		:condition (and (at start (done ?r ?w1 ?w2 ?w3 ?w4))
 						(at start (connected_path ?w1 ?cz)) (at start (connected_path ?w2 ?cz))
 						(at start (connected_path ?w3 ?cz)) (at start (connected_path ?w4 ?cz))) 			;; Il robot deve aver completato la missione
-	    :effect (and (at end (in_charge ?r ?w1 ?w2 ?w3 ?w4 ?cz)))      														;; Il robot rimane nella zona di ricarica
+	    :effect (and (at end (in_charge ?r ?w1 ?w2 ?w3 ?w4 ?cz)))									;; Il robot rimane nella zona di ricarica
+	)
+
+	; Azione: Robot in carica
+	(:durative-action charge_action
+	    :parameters (?r - robot ?w1 - waypoint ?w2 - waypoint ?w3 - waypoint ?w4 - waypoint ?cz - recharge_zone)
+	    :duration (= ?duration 10)
+		:condition (and (at start (in_charge ?r ?w1 ?w2 ?w3 ?w4 ?cz)))					;; Il robot deve essere nella zona di ricarica
+	    :effect (and (at end (charged ?r ?w1 ?w2 ?w3 ?w4 ?cz))) 	;; Il robot esce dalla zona di ricarica
 	)
 )

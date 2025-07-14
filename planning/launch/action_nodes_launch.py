@@ -48,6 +48,15 @@ def generate_launch_description():
         parameters=[]
     )
 
+    charge_action_node = Node(
+        package='planning',
+        executable='charge_action_node',
+        name='charge_action_node',
+        
+        output='screen',
+        parameters=[]
+    )
+
     dummy_cmd = Node(
         package='planning',
         executable='dummy_map_node',
@@ -74,5 +83,6 @@ def generate_launch_description():
         move_to_lowest_id,
         service_node,
         move_to_recharge_zone,
+        charge_action_node,
         #dummy_cmd,
     ])
