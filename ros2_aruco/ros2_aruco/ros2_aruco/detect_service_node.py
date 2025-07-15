@@ -47,10 +47,8 @@ class MapDataService(Node):
             options = "\n".join([s for s in dir(cv2.aruco) if s.startswith("DICT")])
             self.get_logger().error("valid options: {}".format(options))
 
-        
         # Set up subscriptions
         self.info_sub = self.create_subscription(CameraInfo, info_topic, self.info_callback, qos_profile_sensor_data)
-
         self.create_subscription(Image, image_topic, self.image_callback, qos_profile_sensor_data)
 
         # Set up publishers
@@ -64,6 +62,7 @@ class MapDataService(Node):
 
         self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_parameters = cv2.aruco.DetectorParameters()
+        self.aruco_detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.aruco_parameters)
         self.bridge = CvBridge()
 
         # Useful variables
@@ -73,13 +72,13 @@ class MapDataService(Node):
         self.marker_detected = False
         self.detect_active = False
 
-        # Publish conrol velocity of the robot
+        # Publish control velocity of the robot
         self.pub_vel_control = self.create_publisher(Twist, '/cmd_vel', 10)
 
         # Subscribe robot's odom
         self.position = self.create_subscription(Odometry, '/odom', self.orientation_and_position_callback, 10)
 
-        # Creiamo il servizio
+        # Create the service
         self.srv = self.create_service(GetMapData, 'get_map_data', self.get_map_data_callback)  
 
 
@@ -87,8 +86,6 @@ class MapDataService(Node):
     def orientation_and_position_callback(self, msg):
         self.position_x = msg.pose.pose.position.x
         self.position_y = msg.pose.pose.position.y
-
-        #self.get_logger().info(f'x={self.position_x}, y={self.position_y}')
 
     def info_callback(self, info_msg):
         self.info_msg = info_msg
@@ -105,51 +102,48 @@ class MapDataService(Node):
 
         control_msg = Twist()
         
-        #self.get_logger().info('Detection')
-    
         if self.info_msg is None:
             self.get_logger().warn("No camera info has been received!")
             return
-    
+
         cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='mono8')
-    
+
         markers = ArucoMarkers()
         pose_array = PoseArray()
-    
+
         if self.camera_frame is None:
             markers.header.frame_id = self.info_msg.header.frame_id
             pose_array.header.frame_id = self.info_msg.header.frame_id
         else:
             markers.header.frame_id = self.camera_frame
             pose_array.header.frame_id = self.camera_frame
-    
+
         markers.header.stamp = img_msg.header.stamp
         pose_array.header.stamp = img_msg.header.stamp
-    
-        # Rilevazione dei marker
-        corners, marker_ids, rejected = cv2.aruco.detectMarkers(cv_image, self.aruco_dictionary, parameters=self.aruco_parameters)
 
-        #print(marker_ids)
+        # Marker detection (new API)
+        corners, marker_ids, rejected = self.aruco_detector.detectMarkers(cv_image)
+
         if marker_ids is None:
-            # Nessun marker rilevato, aggiorniamo lo stato
+            # No markers detected, rotate
             control_msg.angular.z = 0.7
             self.pub_vel_control.publish(control_msg)
         else:
-            # Marker rilevati
+            # Markers detected
             for id in marker_ids.flatten().tolist():
-                if id != 0 and id is not None:  # Condizione per elemento non nullo
+                if id != 0 and id is not None:
                     self.id = id
                     break
                 else:
-                    self.id = None  # Nel caso non ci siano elementi validi
+                    self.id = None
 
             self.marker_detected = True
-            control_msg.angular.z = 0.0  # Ferma la rotazione
+            control_msg.angular.z = 0.0
             self.pub_vel_control.publish(control_msg)
 
 
     def get_map_data_callback(self, request, response):
-        # service che restituisce le info sulla posizione e l'id rilevato
+        # Service returning position and detected marker id
         self.detect_active = True
 
         if self.marker_detected:
